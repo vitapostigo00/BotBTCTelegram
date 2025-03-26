@@ -4,7 +4,6 @@ from credentials import get_credentials
 #Para funciones exclusivas de mongo que no requieren de los nodos
 
 def register_user(user_id):
-
     credentials = get_credentials('mongo')
     client = MongoClient(credentials["client"])
     db = client[credentials["db"]]

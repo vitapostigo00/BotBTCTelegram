@@ -1,12 +1,13 @@
 import hashlib
 import bitcoinlib
 from bitcoinlib.transactions import Output
+from bitcoinrpc.authproxy import AuthServiceProxy
 from ApiToken import btcMainnetPass,btcTestnetPass,ipLocal
 
 #Para mongodb:
 #Mirar para cambiar las ips por redes internas.
 credsMongo = {
-    "client": "mongodb://192.168.1.184:27017/",
+    "client": "mongodb://" + ipLocal () + ":27017/",
     "db": "telegram_bot",
     "collection": "seguimientos"
 }
@@ -19,7 +20,7 @@ credsNodoMainnet = {
 }
 
 credsFulcrumMainnet = {
-    "host" : '192.168.1.184',
+    "host" : ipLocal(),
     "port" : 50001
 }
 
@@ -27,7 +28,7 @@ credsFulcrumMainnet = {
 credsNodoTestnet = {
     "rpc_user" : "testnet",
     "rpc_password" : btcTestnetPass(),
-    "rpc_url" : "http://"+ipLocal ()+":18332/"
+    "rpc_url" : "http://"+ipLocal()+":18332/"
 }
 
 credsFulcrumTestnet = {
@@ -58,16 +59,19 @@ def get_credentials(controlData):
             }
 
 #Esta función está aqui (y no en funciones) para resolver los problemas de los imports circulares.
-def addr2scripthash(address):
+def addr2scripthash(address,testnet):
     #Convierte la dirección en Script2Key para que el nodo pueda usarla.
-    script = Output(0, address).script
+    if(testnet):
+        script = Output(0, address,network='testnet').script
+    else:
+        script = Output(0, address).script
     script_bytes = script.serialize()
     hash_value = hashlib.sha256(script_bytes).digest()
     reversed_hash = hash_value[::-1]
     return reversed_hash.hex()
 
 #Consultas a nodo Fulcrum
-def getFulcrumQuery(method,data):
+def getFulcrumQuery(method,data,testnet):
     if method == 'getTx':
         return { #Data debera ser una transacción
             "method": "blockchain.transaction.get",
@@ -84,25 +88,30 @@ def getFulcrumQuery(method,data):
         if method == 'getBalance':
             return { #Data debera ser una direccion
                 "method": "blockchain.scripthash.get_balance",
-                "params": [addr2scripthash(data)],
+                "params": [addr2scripthash(data,testnet)],
                 "id": 0
             }
         elif method == 'firstUse':
             return { #Data debera ser una direccion
                 "method": "blockchain.scripthash.get_first_use",
-                "params": [addr2scripthash(data)],
+                "params": [addr2scripthash(data,testnet)],
                 "id": 0
             }
         elif method == 'getHistory':
             return { #Data debera ser una direccion
                 "method": "blockchain.scripthash.get_history",
-                "params": [addr2scripthash(data),0,-1],
+                "params": [addr2scripthash(data,testnet),0,-1],
                 "id": 0
             }
         else:
             return {}
-        
+        1
     except bitcoinlib.encoding.EncodingError as e:
         return {}
 
+#PARTE DE PRUEBAS PARA NO TENER QUE CONSULTAR EL NODO RPC A MANO:
+def getMainnetClient(): 
+    return "http://mainnet:"+btcMainnetPass()+"@"+ipLocal()+":8332"
 
+def getTestnetClient(): 
+    return "http://testnet:"+btcTestnetPass()+"@"+ipLocal()+":18332"

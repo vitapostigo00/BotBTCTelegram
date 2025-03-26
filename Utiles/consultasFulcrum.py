@@ -20,45 +20,6 @@ def consultaFulcrum(host, port, content):
     sock.close()
     return res
     
-""" Se mueve directamente al nodo:
-def getTxInfo(user_id,tx):
-    #No está terminado, probablemente haya que pasarlo a decoderawtransaction. Por ahora dejarlo para el final
-    redActual = booleanFromUser(user_id)
-
-    if redActual == "Error":
-        return redActual
-
-    jsonQuery = getFulcrumQuery('getTx',tx)
-    servidor = get_credentials(redActual)
-
-    try:
-        respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-        
-        #A veces el servidor no responde correctamente, esto no suele pasar pero lo reintentamos
-        if not respuesta:     
-            for i in range(3):
-                respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-                if respuesta:
-                    break
-                else:
-                    sleep(1)
-        
-        #Ahora se pueden dar 3 casos, que hayamos obtenido respuesta, que obtengamos un error o que todo se haya obtenido correctamente.
-        if not respuesta:
-            #Si no tenemos respuesta, no podemos parsear el json, devolvemos error del servidor por pantalla
-            return "Error de conexion al servidor."
-
-        if 'error' in respuesta:
-            return "No se ha podido encontrar la transacción en la red seleccionada."      
-
-        data = json.loads(respuesta)
-        return data
-
-        
-    except bitcoinlib.encoding.EncodingError as e:
-        return "La dirección no tiene un formato correcto."
-"""
-    
 
 def getBlockFromTx(user_id,tx):
     #Mirar cómo queremos los campos en el bot de Telegram
@@ -67,7 +28,7 @@ def getBlockFromTx(user_id,tx):
     if redActual == "Error":
         return redActual
 
-    jsonQuery = getFulcrumQuery('getBlockHash',tx)
+    jsonQuery = getFulcrumQuery('getBlockHash',tx,redActual)
     servidor = get_credentials(redActual)
 
     try:
@@ -103,7 +64,7 @@ def getBalanceNode(user_id,address):
     if redActual == "Error":
         return redActual
 
-    jsonQuery = getFulcrumQuery('getBalance',address)
+    jsonQuery = getFulcrumQuery('getBalance',address,redActual)
     servidor = get_credentials(redActual)
 
     try:
@@ -122,7 +83,7 @@ def firstUse(user_id,tx):
     if redActual == "Error":
         return redActual
 
-    jsonQuery = getFulcrumQuery('firstUse',tx)
+    jsonQuery = getFulcrumQuery('firstUse',tx,redActual)
     servidor = get_credentials(redActual)
 
     try:
@@ -160,7 +121,7 @@ def addressHistory(user_id,tx):
     if redActual == "Error":
         return redActual
 
-    jsonQuery = getFulcrumQuery('getHistory',tx)
+    jsonQuery = getFulcrumQuery('getHistory',tx,redActual)
     servidor = get_credentials(redActual)
 
     try:

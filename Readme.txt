@@ -16,3 +16,5 @@ https://stackoverflow.com/questions/43291868/where-to-find-the-telegram-api-key
 El proyecto se encuentra aún en desarrollo, una vez desarrollado y escrito el código se generará un contenedor para desplegar el bot más fácilmente pero aún se está lejos de ese punto.
 También se hará una setup-guide para configurar las redes internas de docker exponiendo los puertos lo menos posible.
 
+Librerías de interés usadas:
+https://github.com/jgarzik/python-bitcoinrpc
