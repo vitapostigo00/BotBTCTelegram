@@ -76,14 +76,14 @@ def getBalanceNode(user_id,address):
         return "La dirección no tiene un formato correcto."
     
 
-def firstUse(user_id,tx):
-    #Mirar cómo queremos los campos en el bot de Telegram
+def firstUse(user_id,addr):
+    #Mirar por qué los resultados no son correctos
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
         return redActual
 
-    jsonQuery = getFulcrumQuery('firstUse',tx,redActual)
+    jsonQuery = getFulcrumQuery('firstUse',addr,redActual)
     servidor = get_credentials(redActual)
 
     try:
@@ -103,10 +103,12 @@ def firstUse(user_id,tx):
             return "Error de conexion al servidor."
 
         if 'error' in respuesta:
-            return "No se ha podido encontrar la transacción en la red seleccionada."      
+            return "No se ha podido encontrar la dirección en la red seleccionada."      
 
-        #data = json.loads(respuesta)
-        return respuesta
+        data = json.loads(respuesta)
+        retorno =  "La direccion: " + str(addr) + " fue utilizada por primera vez en el bloque número: " + str(data["result"]["block_height"]) + "\n\
+        con hash: " + str(data["result"]["block_hash"]) + "\nen la transacción con id: " + str(data["result"]["tx_hash"])
+        return retorno
 
         
     except bitcoinlib.encoding.EncodingError as e:
