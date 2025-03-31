@@ -142,7 +142,7 @@ def infoTx(user_id,tx):
     #Multisig salida:                tx=d63667e49701df10b51dfe347e6ed6f59a73f4ef3c883ad9cfee3d23064372a6
     redActual = booleanFromUser(user_id)
 
-    if redActual == "Error":
+    if redActual == "Error": #NO FUNCIONA BIEN TODAVIA CON LAS MULTISIG, MIRAR...
         return redActual
 
     if redActual: 
@@ -195,6 +195,8 @@ def blockInfo(user_id, data):
     isBlockHash = True
     retorno = ""
 
+    blockHash = data
+
     if not isinstance(resultadoBloque,str) and resultadoBloque is not None:
         retorno += f"La transacción: {data} está contenida en:\n"
         blockHash = resultadoBloque["result"]["block_hash"]
@@ -210,12 +212,14 @@ def blockInfo(user_id, data):
     else:
         client = AuthServiceProxy(getMainnetClient())
 
-    if isinstance(data,int) and len(str(data)) != 64:
-        blockHash = client.getblockhash(data)
-    elif isBlockHash:
-        blockHash = data
+    try:
+        numberData = int(data)
+        if len(str(data)) != 64:
+            blockHash = client.getblockhash(numberData)
+    except ValueError:
+        if isBlockHash:
+            blockHash = data
 
-    print(blockHash)
     try:
         blockstats = client.getblockstats(blockHash)
     except bitcoinrpc.authproxy.JSONRPCException:
@@ -227,7 +231,7 @@ def blockInfo(user_id, data):
         retorno += f"Minado en {datetime.utcfromtimestamp(blockstats['time'])}\nHay un total de {blockstats['txs']} transacciones con {numBloquesRed(user_id)-blockstats['height']} confirmaciones\nRecompensa del minero: {blockstats['subsidy']/satsInBTC} BTC\n"
         retorno += f"Hay transacciones por un valor total de: {blockstats['total_out']/satsInBTC} que, en este momento tienen un valor de: {precioPorBTC(blockstats['total_out']/satsInBTC)}\n"
         retorno += f"Máxima comisión pagada en el bloque: {blockstats['maxfee']} satoshis\nMáxima comisión por byte: {blockstats['maxfee']} sats/byte\nMínima comisión pagada en el bloque: {blockstats['minfee']} satoshis\nMínima comisión por byte: {blockstats['maxfee']} sats/byte\n"
-        retorno += f"Menor transacción del bloque: {blockstats['mintxsize']} bytes\nMáxima transacción del bloque: {blockstats['maxtxsize']} bytes\nPeso completo del bloque: {blockstats['total_size']}"
+        retorno += f"Menor transacción del bloque: {blockstats['mintxsize']} bytes\nMáxima transacción del bloque: {blockstats['maxtxsize']} bytes\nPeso completo del bloque: {blockstats['total_size']/1024} kB"
     except: 
         return "Error obteniendo información del bloque."
 

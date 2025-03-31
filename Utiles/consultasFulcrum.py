@@ -2,7 +2,7 @@ import socket
 from time import sleep
 import json
 import bitcoinlib
-from funciones import numBloquesRed, precioPorBTC
+from funciones import precioPorBTC
 from conexionMongo import booleanFromUser
 from credentials import get_credentials, getFulcrumQuery
 
@@ -205,14 +205,3 @@ def infoCuenta(user_id,address):
     retorno += parsearTransacciones(historicoDirecciones)
 
     return retorno
-
-
-def blockInfo(user_id,data):
-    redActual = booleanFromUser(user_id)
-
-    if redActual == "Error":
-        return redActual
-    
-    #Primero tenemos que saber qué tipo de input estamos recibiendo. Posibilidades: Número, hash de bloque o txid
-    #Número y hash del bloque son procesados directamente por el API RPC de Bitcoin por tanto aqui solo hay que convertir (si es) el txid a bloque.
-    #TxId (para dar el bloque contenido)

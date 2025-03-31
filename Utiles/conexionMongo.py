@@ -156,12 +156,7 @@ def unsubscribeUserToAddress(user_id,address):
 
     direccion = collection.find_one({"address": str(address)})
 
-    print("Direccion: " + str(direccion))
-    print("User Id: " + str(user_id))
-    print("Lista Sub: " + str(direccion.get("subscribed", [])))
-
     if direccion and str(user_id) in direccion.get("subscribed", []):
-        print("Entro??")
         collection.update_one(
             {"address": str(address)},
             {"$pull": {"subscribed": str(user_id)}}

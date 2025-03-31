@@ -114,7 +114,7 @@ async def handle_response_keyboard(update: Update, context: CallbackContext) -> 
         await keyboard_consultas(update, context)
 
     elif text == "Cuenta":
-        await update.message.reply_text("Por favor, escribe la direccóni de la cuenta:")
+        await update.message.reply_text("Por favor, escribe la dirección de la cuenta:")
         context.user_data["esperando_datos"] = "cuenta"
 
     elif text == "Transacción":
