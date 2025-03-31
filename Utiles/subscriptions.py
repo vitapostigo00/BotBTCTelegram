@@ -25,7 +25,6 @@ async def on_new_block(bot):
     #El usuario con id 0 (str(0)) es un usuario que siempre está en mainnet
     for cuenta in cuentas_mainnet:
         balanceDatabase = float(cuenta["last_balance"])
-        print("Dirección: " + cuenta["address"])
         actualBalance = getBalanceNode(str(0),cuenta["address"])
         if balanceDatabase != actualBalance:
             if balanceDatabase > actualBalance:

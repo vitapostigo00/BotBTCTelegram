@@ -92,15 +92,33 @@ def subscribeUserToAddress(user_id,address):
     credentials = get_credentials('mongo')
     client = MongoClient(credentials["client"])
     db = client[credentials["db"]]
-    collection = db[credentials["collection"]]
+    collection = db["direcciones"]
 
     direccion = collection.find_one({"address": str(address)})
+
+    userInTestnet = booleanFromUser(user_id)
+
+    #No debería darse pero puede servir para depurar en caso de que la base de datos sea inconsistente.
+    if not isinstance(userInTestnet, bool):
+        return "Error en el programa"
 
     if direccion:
         collection.update_one(
             {"address": str(address)},
             {"$push": {"subscribed": str(user_id)}}
         )
+        #Actualizamos en paralelo la cuenta para facilitar el seguimiento de las cuentas que sigue un usuario
+        collection = db[credentials["collection"]]
+        if userInTestnet:
+            collection.update_one(
+                {"_id": str(user_id)},
+                {"$push": {"list_testnet": str(address)}}
+            )
+        else:
+            collection.update_one(
+                {"_id": str(user_id)},
+                {"$push": {"list_mainnet": str(address)}}
+            )
         client.close()
         return "Se le notificarán los cambios en la dirección: " + str(address)
     
@@ -109,8 +127,19 @@ def subscribeUserToAddress(user_id,address):
             try:
                 entryToInsert = createNewAddressEntry(user_id,address)
                 collection.insert_one(entryToInsert)
+                collection = db[credentials["collection"]]
+                if userInTestnet:
+                    collection.update_one(
+                        {"_id": str(user_id)},
+                        {"$push": {"list_testnet": str(address)}}
+                    )
+                else:
+                    collection.update_one(
+                        {"_id": str(user_id)},
+                        {"$push": {"list_mainnet": str(address)}}
+                    )
                 client.close()
-                return "Se te notificarán los cambios en la dirección: " + str(address)
+                return "Se le notificarán los cambios en la dirección: " + str(address)
             
             except:
                 client.close()
@@ -123,19 +152,71 @@ def unsubscribeUserToAddress(user_id,address):
     credentials = get_credentials('mongo')
     client = MongoClient(credentials["client"])
     db = client[credentials["db"]]
-    collection = db[credentials["collection"]]
+    collection = db["direcciones"]
 
     direccion = collection.find_one({"address": str(address)})
 
-    if direccion and user_id in direccion.get("subscribed", []):
+    print("Direccion: " + str(direccion))
+    print("User Id: " + str(user_id))
+    print("Lista Sub: " + str(direccion.get("subscribed", [])))
+
+    if direccion and str(user_id) in direccion.get("subscribed", []):
+        print("Entro??")
         collection.update_one(
             {"address": str(address)},
             {"$pull": {"subscribed": str(user_id)}}
         )
+        userInTestnet = booleanFromUser(user_id)
+
+        #No debería darse pero puede servir para depurar en caso de que la base de datos sea inconsistente.
+        if not isinstance(userInTestnet, bool):
+            return "Error en el programa"
+        
         #Si ya no queda nadie vigilando esa dirección la borra.
         collection.find_one_and_delete({"subscribed": {"$size": 0}})
+        #Actualizamos en paralelo igual que en subscribe
+        collection = db[credentials["collection"]]
+
+        if userInTestnet:
+            collection.update_one(
+                {"_id": str(user_id)},
+                {"$pull": {"list_testnet": str(address)}}
+            )
+        else:
+            collection.update_one(
+                {"_id": str(user_id)},
+                {"$pull": {"list_mainnet": str(address)}}
+            )
+
         client.close()
         return "Ya no recibirá notifiaciones sobre la dirección: " + str(address)
     
     else:
         return "No está siguiendo esa dirección actualmente, pruebe a revisarla o a cambiar de red."
+    
+
+def showFollowing(user_id):
+    credentials = get_credentials('mongo')
+    client = MongoClient(credentials["client"])
+    db = client[credentials["db"]]
+    collection = db[credentials["collection"]]
+
+    user = collection.find_one({"_id": str(user_id)})
+
+    if not user["list_mainnet"]:
+        texto_mainnet = "No está siguiendo direcciones en mainnet.\n"
+    else:
+        texto_mainnet = "Está siguiendo las siguientes direcciones en Mainnet:\n"
+        for address in user["list_mainnet"]:
+            texto_mainnet += str(address) + "\n"
+
+    if not user["list_testnet"]:
+        texto_testnet = "No está siguiendo direcciones en testnet.\n"
+    else:
+        texto_testnet = "Está siguiendo las siguientes direcciones en Testnet:\n"
+        for address in user["list_testnet"]:
+            texto_testnet += str(address) + "\n"
+
+    texto_mainnet += texto_testnet
+    client.close()
+    return texto_mainnet

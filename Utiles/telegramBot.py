@@ -22,7 +22,8 @@ async def help(update: Update, context: CallbackContext) -> None:
     '/consultarTransaccion para obtener información sobre una transacción\n'
     '/primerUso para consultar cuándo fue la primera vez que una dirección recibió fondos\n'
     '/suscribirse para recibir notificaciones en tiempo real de cambios en el saldo de la cuenta que quiera\n'
-    '/cancelarSuscripcion para dejar de recibir las notificaciones de suscribirse'
+    '/cancelarSuscripcion para dejar de recibir las notificaciones de suscribirse\n'
+    '/mostrarSeguimiento para ver las direcciones que están siendo vigiladas \n'
     )
     await update.message.reply_text(options)
 
@@ -80,7 +81,8 @@ async def cancelarSuscripcion(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text('Por favor, escribe una dirección junto al comando para no ser notificado.')
 
-
+async def mostrarSeguimiento(update: Update, context: CallbackContext) -> None:
+    await update.message.reply_text(showFollowing(update.message.from_user.id))
 
 async def main():
 
@@ -96,6 +98,7 @@ async def main():
     app.add_handler(CommandHandler("primerUso", primerUso))
     app.add_handler(CommandHandler("suscribirse", suscribirse))
     app.add_handler(CommandHandler("cancelarSuscripcion", cancelarSuscripcion))
+    app.add_handler(CommandHandler("mostrarSeguimiento", mostrarSeguimiento))
 
     await app.run_polling()
 
