@@ -36,9 +36,10 @@ async def on_new_block(bot):
                 mensaje = "Mainnet:\nEl saldo de la cuenta: " + cuenta["address"] + " ha incrementado de: " + str(balanceDatabase) + "\
                 a: " + str(actualBalance) + "\nLo que representa un aumento de: " + str(actualBalance - balanceDatabase) + " BTC"
                 await pushMessage(mensaje, cuenta["subscribed"],bot)
-        #Por último, como ha cambiado el saldo, lo actualizamos en la bbdd:
-        collection.update_one(cuenta, {"$set": {"last_balance": actualBalance}})
-
+            #Por último, como ha cambiado el saldo, lo actualizamos en la bbdd:
+            collection.update_one(cuenta, {"$set": {"last_balance": actualBalance}})
+        
+    client.close()
 
     """
     #Si vuelve a petar comento de aqui para abajo
@@ -65,7 +66,7 @@ async def on_new_block(bot):
 async def listen_to_zmq():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect("tcp:/"+ ipLocal +"/:8433")
+    socket.connect("tcp://"+ ipLocal() +":8433")
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
     bot = Bot(token=returnApiToken())
 
