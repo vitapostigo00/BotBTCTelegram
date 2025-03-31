@@ -9,7 +9,7 @@ from ApiToken import btcMainnetPass,btcTestnetPass,ipLocal
 credsMongo = {
     "client": "mongodb://" + ipLocal () + ":27017/",
     "db": "telegram_bot",
-    "collection": "seguimientos"
+    "collection": "cuentasTelegram"
 }
 
 #MAINNET: 

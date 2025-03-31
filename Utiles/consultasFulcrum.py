@@ -153,4 +153,4 @@ def addressHistory(user_id,tx):
         return "La dirección no tiene un formato correcto."
     except json.decoder.JSONDecodeError as e2:
         return "La cantidad de transacciones de esta dirección es superior a la soportada por el programa."
-        
+    

@@ -9,8 +9,6 @@ from ApiToken import returnApiToken
 
 nest_asyncio.apply()
 
-#TOKEN = returnApiToken ()
-
 async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text(register_user(update.message.from_user.id))
 
@@ -23,6 +21,8 @@ async def help(update: Update, context: CallbackContext) -> None:
     '/consultarSaldo para ver el balance de una dirección\n'
     '/consultarTransaccion para obtener información sobre una transacción\n'
     '/primerUso para consultar cuándo fue la primera vez que una dirección recibió fondos\n'
+    '/suscribirse para recibir notificaciones en tiempo real de cambios en el saldo de la cuenta que quiera\n'
+    '/cancelarSuscripcion para dejar de recibir las notificaciones de suscribirse'
     )
     await update.message.reply_text(options)
 
@@ -66,11 +66,24 @@ async def primerUso(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text('Por favor, escribe una transaccion junto al comando para obtener información sobre ella.')
 
+async def suscribirse(update: Update, context: CallbackContext) -> None:
+    if len(context.args) > 0:
+        address = context.args[0]
+        await update.message.reply_text(subscribeUserToAddress(update.message.from_user.id,address))
+    else:
+        await update.message.reply_text('Por favor, escribe una dirección junto al comando para ser notificado de cambios en el saldo.')
 
+async def cancelarSuscripcion(update: Update, context: CallbackContext) -> None:
+    if len(context.args) > 0:
+        address = context.args[0]
+        await update.message.reply_text(unsubscribeUserToAddress(update.message.from_user.id,address))
+    else:
+        await update.message.reply_text('Por favor, escribe una dirección junto al comando para no ser notificado.')
 
 
 
 async def main():
+
     app = Application.builder().token(returnApiToken ()).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -81,6 +94,8 @@ async def main():
     app.add_handler(CommandHandler("consultarSaldo", consultarSaldo))
     app.add_handler(CommandHandler("consultarTransaccion", consultarTx))
     app.add_handler(CommandHandler("primerUso", primerUso))
+    app.add_handler(CommandHandler("suscribirse", suscribirse))
+    app.add_handler(CommandHandler("cancelarSuscripcion", cancelarSuscripcion))
 
     await app.run_polling()
 

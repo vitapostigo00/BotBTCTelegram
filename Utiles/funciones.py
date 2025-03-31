@@ -1,21 +1,23 @@
 import requests
 import re
 from bitcoinrpc.authproxy import AuthServiceProxy
+from pymongo import MongoClient
 from datetime import datetime
 #Imports propios
 from conexionMongo import booleanFromUser
 from credentials import *
 
+
+##########################################################
+def isValidBTCAddress(address):
+    regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
+    return bool(re.match(regex, address))
 ##########################################################
 def precio_bitcoin():
     url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
     response = requests.get(url)
     data = response.json()
     return str(data['bitcoin']['usd'])
-##########################################################
-def isValidBTCAddress(address):
-    regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
-    return bool(re.match(regex, address))
 ##########################################################
 def precioPorBTC(num):
     url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
