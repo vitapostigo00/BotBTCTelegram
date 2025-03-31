@@ -1,11 +1,12 @@
 import asyncio
 import nest_asyncio
 from telegram import Update
-from telegram.ext import Application, CommandHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 from consultasFulcrum import firstUse, getBalanceNode
 from funciones import *
 from conexionMongo import *
 from ApiToken import returnApiToken
+from tecladoTelegram import *
 
 nest_asyncio.apply()
 
@@ -14,7 +15,8 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 
 async def help(update: Update, context: CallbackContext) -> None:
-    options = ('Los comandos disponibles actualmente son:\n'
+    options = ('Usa /keyboard para poder interactuar con el teclado. Si lo prefieres, puedes usar directamente los comandos...\n'
+    'los disponibles actualmente son:\n'
     '/blockchaininfo Devuelve información de la red a la que está conectada el bot\n'
     '/precio : Devuelve el precio actual de 1 BTC\n'
     '/cambiarRed Para cambiar entre mainnet y testnet\n'
@@ -29,7 +31,7 @@ async def help(update: Update, context: CallbackContext) -> None:
 
 
 async def blockchainInfo(update: Update, context: CallbackContext) -> None:
-        await update.message.reply_text(infoBlockchain(update.message.from_user.id))
+    await update.message.reply_text(infoBlockchain(update.message.from_user.id))
 
 async def precio(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text('El precio actual de 1 Bitcoin es: ' + precio_bitcoin() + " $")
@@ -99,6 +101,10 @@ async def main():
     app.add_handler(CommandHandler("suscribirse", suscribirse))
     app.add_handler(CommandHandler("cancelarSuscripcion", cancelarSuscripcion))
     app.add_handler(CommandHandler("mostrarSeguimiento", mostrarSeguimiento))
+    
+    ##De tecladoTelegram.py
+    app.add_handler(CommandHandler("keyboard", keyboard_principal))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_response_keyboard))
 
     await app.run_polling()
 

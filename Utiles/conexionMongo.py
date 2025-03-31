@@ -30,7 +30,7 @@ def register_user(user_id):
     
     if user: #Usuario encontrado.
         client.close()
-        return f"Bienvenido de nuevo! Usa /help para ver más comandos"
+        return f"Bienvenido de nuevo!\nUsa /help si quieres usar los comando o /keyboard si quieres el teclado para interactuar conmigo."
     else:
         # Si no está registrado, insertar el nuevo usuario
         new_user = {
@@ -41,7 +41,7 @@ def register_user(user_id):
         }
         collection.insert_one(new_user)
         client.close()
-        return f"Bienvenido, usa /help para ver más comandos !"
+        return f"Bienvenido, usa /help si quieres usar los comando o /keyboard si quieres el teclado para interactuar conmigo."
 ##########################################################
 def changeNet(user_id):
     credentials = get_credentials('mongo')

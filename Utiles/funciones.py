@@ -1,3 +1,4 @@
+import bitcoinrpc
 import requests
 import re
 from bitcoinrpc.authproxy import AuthServiceProxy
@@ -6,6 +7,19 @@ from datetime import datetime
 #Imports propios
 from conexionMongo import booleanFromUser
 from credentials import *
+
+import hashlib
+import binascii
+
+def hashBlockHeader(header_hex):
+    # Decodificar el encabezado hexadecimal a bytes
+    header_bin = binascii.unhexlify(header_hex)
+    # Aplicar SHA-256 dos veces
+    hash1 = hashlib.sha256(header_bin).digest()
+    hash2 = hashlib.sha256(hash1).digest()
+    # Invertir el orden de los bytes para obtener el hash del bloque
+    hash_bloque = binascii.hexlify(hash2[::-1]).decode('utf-8')
+    return hash_bloque
 
 ##########################################################
 def isValidBTCAddress(address):
@@ -27,6 +41,26 @@ def precioPorBTC(num):
     precio = "{:.2f}".format(valorEnDols)
 
     return str(precio)+ '$'
+##########################################################
+def numBloquesRed(user_id):
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return redActual
+
+    if redActual: 
+        client = AuthServiceProxy(getTestnetClient())
+    else:
+        client = AuthServiceProxy(getMainnetClient())
+
+    try: 
+        jsonToParse = client.getblockchaininfo()
+    except: 
+        return "Error de conexión"  
+     
+    resultadoRed = jsonToParse.get("chain", "Desconocido") 
+
+    return int(jsonToParse["blocks"])
 
 ##########################################################
 def infoBlockchain(user_id):
@@ -155,3 +189,46 @@ def infoTx(user_id,tx):
 
         return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
 ##########################################################
+def blockInfo(user_id, data):
+    from consultasFulcrum import getBlockFromTx
+    resultadoBloque = getBlockFromTx(user_id, data)
+    isBlockHash = True
+    retorno = ""
+
+    if not isinstance(resultadoBloque,str) and resultadoBloque is not None:
+        retorno += f"La transacción: {data} está contenida en:\n"
+        blockHash = resultadoBloque["result"]["block_hash"]
+        isBlockHash = False
+
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return redActual
+
+    if redActual: 
+        client = AuthServiceProxy(getTestnetClient())
+    else:
+        client = AuthServiceProxy(getMainnetClient())
+
+    if isinstance(data,int) and len(str(data)) != 64:
+        blockHash = client.getblockhash(data)
+    elif isBlockHash:
+        blockHash = data
+
+    print(blockHash)
+    try:
+        blockstats = client.getblockstats(blockHash)
+    except bitcoinrpc.authproxy.JSONRPCException:
+        return "No se ha podido encontrar el bloque, revisa que los datos sean correctos..."
+
+    try: 
+        satsInBTC = 100000000
+        retorno += f"Hash del bloque: {blockstats['blockhash']}\nCon altura: {blockstats['height']}\nComisión promedio: {blockstats['avgfee']} satoshis\nComisión por byte: {blockstats['avgfeerate']} sats/byte\n"
+        retorno += f"Minado en {datetime.utcfromtimestamp(blockstats['time'])}\nHay un total de {blockstats['txs']} transacciones con {numBloquesRed(user_id)-blockstats['height']} confirmaciones\nRecompensa del minero: {blockstats['subsidy']/satsInBTC} BTC\n"
+        retorno += f"Hay transacciones por un valor total de: {blockstats['total_out']/satsInBTC} que, en este momento tienen un valor de: {precioPorBTC(blockstats['total_out']/satsInBTC)}\n"
+        retorno += f"Máxima comisión pagada en el bloque: {blockstats['maxfee']} satoshis\nMáxima comisión por byte: {blockstats['maxfee']} sats/byte\nMínima comisión pagada en el bloque: {blockstats['minfee']} satoshis\nMínima comisión por byte: {blockstats['maxfee']} sats/byte\n"
+        retorno += f"Menor transacción del bloque: {blockstats['mintxsize']} bytes\nMáxima transacción del bloque: {blockstats['maxtxsize']} bytes\nPeso completo del bloque: {blockstats['total_size']}"
+    except: 
+        return "Error obteniendo información del bloque."
+
+    return retorno

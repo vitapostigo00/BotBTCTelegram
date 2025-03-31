@@ -1,7 +1,6 @@
 import hashlib
 import bitcoinlib
 from bitcoinlib.transactions import Output
-from bitcoinrpc.authproxy import AuthServiceProxy
 from ApiToken import btcMainnetPass,btcTestnetPass,ipLocal
 
 #Para mongodb:
@@ -103,9 +102,21 @@ def getFulcrumQuery(method,data,testnet):
                 "params": [addr2scripthash(data,testnet),0,-1],
                 "id": 0
             }
+        elif method == 'blockFromTx':
+            return { #Data debera ser una transacción
+                "method": "blockchain.transaction.get_height",
+                "params": [data],
+                "id": 0
+            }
+        elif method == 'blockHashFromHeight':
+            return { #Data debera ser un numero
+                "method": "blockchain.block.header",
+                "params": [data,0],
+                "id": 0
+            }
         else:
             return {}
-        1
+        
     except bitcoinlib.encoding.EncodingError as e:
         return {}
 

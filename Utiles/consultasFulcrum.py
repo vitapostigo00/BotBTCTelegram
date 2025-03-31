@@ -2,6 +2,7 @@ import socket
 from time import sleep
 import json
 import bitcoinlib
+from funciones import numBloquesRed, precioPorBTC
 from conexionMongo import booleanFromUser
 from credentials import get_credentials, getFulcrumQuery
 
@@ -19,10 +20,118 @@ def consultaFulcrum(host, port, content):
         res += data.decode()
     sock.close()
     return res
+
+def consultaFulcrumPesada(host, port, content):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
+    sock.sendall(json.dumps(content).encode('utf-8')+b'\n')
+    sleep(0.5)
+    sock.shutdown(socket.SHUT_WR)
+    res = ""
+    while True:
+        data = sock.recv(65536)
+        if (not data):
+            break
+        res += data.decode()
+    sock.close()
+    return res
+    
+def getBalanceNode(user_id,address):
+    satsInBTC = 100000000
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return redActual
+
+    jsonQuery = getFulcrumQuery('getBalance',address,redActual)
+    servidor = get_credentials(redActual)
+
+    try:
+        data = json.loads(consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery))
+        confirmed = float(data['result']['confirmed'])
+        return confirmed/satsInBTC
+    
+    except bitcoinlib.encoding.EncodingError as e:
+        return "La dirección no tiene un formato correcto."
+    
+
+def firstUse(user_id,addr):
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return redActual
+
+    jsonQuery = getFulcrumQuery('firstUse',addr,redActual)
+    servidor = get_credentials(redActual)
+
+    try:
+        respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
+        #A veces el servidor no responde correctamente, esto no suele pasar pero lo reintentamos
+        if not respuesta:     
+            for i in range(3):
+                respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
+                if respuesta:
+                    break
+                else:
+                    sleep(1)
+        
+        #Ahora se pueden dar 3 casos, que hayamos obtenido respuesta, que obtengamos un error o que todo se haya obtenido correctamente.
+        if not respuesta:
+            #Si no tenemos respuesta, no podemos parsear el json, devolvemos error del servidor por pantalla
+            return "Error de conexion al servidor."
+
+        if 'error' in respuesta:
+            return "Error, no se ha podido encontrar la dirección en la red seleccionada."      
+
+        data = json.loads(respuesta)
+        return data
+
+        
+    except bitcoinlib.encoding.EncodingError as e:
+        return "Error, la dirección no tiene un formato correcto."
+    
+
+
+def addressHistory(user_id,tx):
+    #Mirar cómo queremos los campos en el bot de Telegram
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return redActual
+
+    jsonQuery = getFulcrumQuery('getHistory',tx,redActual)
+    servidor = get_credentials(redActual)
+
+    try:
+        respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
+        #A veces el servidor no responde correctamente, si esto pasa ponemos la función de hacer una consulta más pesada a ver si eso soluciona y lo reintentamos.
+        if not respuesta:     
+            for i in range(3):
+                respuesta = consultaFulcrumPesada(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
+                if respuesta:
+                    break
+                else:
+                    sleep(1)
+        
+        #Ahora se pueden dar 3 casos, que hayamos obtenido respuesta, que obtengamos un error o que todo se haya obtenido correctamente.
+        if not respuesta:
+            #Si no tenemos respuesta, no podemos parsear el json, devolvemos error del servidor por pantalla
+            return "Error de conexion al servidor."
+
+        if 'error' in respuesta:
+            return "No se ha podido encontrar la cuenta seleccionada."      
+
+        data = json.loads(respuesta)
+        return data
+
+        
+    except bitcoinlib.encoding.EncodingError as e:
+        return "La dirección no tiene un formato correcto."
+    except json.decoder.JSONDecodeError as e2:
+        return "La cantidad de transacciones de esta dirección es superior a la soportada por el programa."
     
 
 def getBlockFromTx(user_id,tx):
-    #Mirar cómo queremos los campos en el bot de Telegram
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
@@ -57,100 +166,53 @@ def getBlockFromTx(user_id,tx):
     except bitcoinlib.encoding.EncodingError as e:
         return "La dirección no tiene un formato correcto."
     
-def getBalanceNode(user_id,address):
-    satsInBTC = 100000000
-    redActual = booleanFromUser(user_id)
+def parsearTransacciones(historico):
+    numTx = len(historico["result"])
+    retorno = ""
 
-    if redActual == "Error":
-        return redActual
+    if(numTx >5):#Si hay más de 5, devolvemos las últimas 5
+        txAProcesar = historico["result"][-5:]
+    else:
+        txAProcesar = historico["result"]
+    for tx in txAProcesar:
+        retorno += f"Transacción con hash: {tx['tx_hash']} en el bloque: {tx['height']}\n"
+    return retorno
 
-    jsonQuery = getFulcrumQuery('getBalance',address,redActual)
-    servidor = get_credentials(redActual)
 
-    try:
-        data = json.loads(consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery))
-        confirmed = float(data['result']['confirmed'])
-        return confirmed/satsInBTC
+def infoCuenta(user_id,address):
+    saldoActual = getBalanceNode(user_id,address)
+    if saldoActual=="La dirección no tiene un formato correcto.":
+        return saldoActual
     
-    except bitcoinlib.encoding.EncodingError as e:
-        return "La dirección no tiene un formato correcto."
-    
+    retorno = f"La cuenta: {address} tiene actualmente: {saldoActual} BTC por valor de: {precioPorBTC(saldoActual)}\n"
 
-def firstUse(user_id,addr):
-    #Mirar por qué los resultados no son correctos
-    redActual = booleanFromUser(user_id)
+    primerUso = firstUse(user_id,address)
 
-    if redActual == "Error":
-        return redActual
+    if isinstance(primerUso,str):
+        return primerUso
 
-    jsonQuery = getFulcrumQuery('firstUse',addr,redActual)
-    servidor = get_credentials(redActual)
+    retorno += f"Fue usada por primera vez en el bloque número: {primerUso['result']['block_height']}\nCon hash:{primerUso['result']['block_hash']}\nEn la transacción:{primerUso['result']['tx_hash']}\n"
 
-    try:
-        respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-        #A veces el servidor no responde correctamente, esto no suele pasar pero lo reintentamos
-        if not respuesta:     
-            for i in range(3):
-                respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-                if respuesta:
-                    break
-                else:
-                    sleep(1)
-        
-        #Ahora se pueden dar 3 casos, que hayamos obtenido respuesta, que obtengamos un error o que todo se haya obtenido correctamente.
-        if not respuesta:
-            #Si no tenemos respuesta, no podemos parsear el json, devolvemos error del servidor por pantalla
-            return "Error de conexion al servidor."
+    historicoDirecciones = addressHistory(user_id,address)
 
-        if 'error' in respuesta:
-            return "No se ha podido encontrar la dirección en la red seleccionada."      
-
-        data = json.loads(respuesta)
-        retorno =  "La direccion: " + str(addr) + " fue utilizada por primera vez en el bloque número: " + str(data["result"]["block_height"]) + "\n\
-        con hash: " + str(data["result"]["block_hash"]) + "\nen la transacción con id: " + str(data["result"]["tx_hash"])
+    if isinstance(historicoDirecciones,str):#Si es un string indica código de error, simplemente devolvemos lo que tenemos.
         return retorno
 
-        
-    except bitcoinlib.encoding.EncodingError as e:
-        return "La dirección no tiene un formato correcto."
-    
+    num_entradas = len(historicoDirecciones["result"])
+
+    retorno += f"Se han podido obtener: {num_entradas} direcciones asociadas a la cuenta\n"
+
+    retorno += parsearTransacciones(historicoDirecciones)
+
+    return retorno
 
 
-def addressHistory(user_id,tx):
-    #Mirar cómo queremos los campos en el bot de Telegram
+def blockInfo(user_id,data):
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
         return redActual
-
-    jsonQuery = getFulcrumQuery('getHistory',tx,redActual)
-    servidor = get_credentials(redActual)
-
-    try:
-        respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-        #A veces el servidor no responde correctamente, esto no suele pasar pero lo reintentamos
-        if not respuesta:     
-            for i in range(3):
-                respuesta = consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery)
-                if respuesta:
-                    break
-                else:
-                    sleep(1)
-        
-        #Ahora se pueden dar 3 casos, que hayamos obtenido respuesta, que obtengamos un error o que todo se haya obtenido correctamente.
-        if not respuesta:
-            #Si no tenemos respuesta, no podemos parsear el json, devolvemos error del servidor por pantalla
-            return "Error de conexion al servidor."
-
-        if 'error' in respuesta:
-            return "No se ha podido encontrar la cuenta seleccionada."      
-
-        data = json.loads(respuesta)
-        return data
-
-        
-    except bitcoinlib.encoding.EncodingError as e:
-        return "La dirección no tiene un formato correcto."
-    except json.decoder.JSONDecodeError as e2:
-        return "La cantidad de transacciones de esta dirección es superior a la soportada por el programa."
     
+    #Primero tenemos que saber qué tipo de input estamos recibiendo. Posibilidades: Número, hash de bloque o txid
+    #Número y hash del bloque son procesados directamente por el API RPC de Bitcoin por tanto aqui solo hay que convertir (si es) el txid a bloque.
+    #TxId (para dar el bloque contenido)
