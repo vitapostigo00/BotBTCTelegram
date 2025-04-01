@@ -132,7 +132,12 @@ def printInputsFromList(list):
 def outputFormat(list):
     retorno = ""
     for salida in list:
-        retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
+        #Caso OP_RETURN
+        if salida[0] == 'OP_RETURN':
+            retorno += f"Dirección: OP_RETURN, datos escritos: {salida[1].split()[1]}\n"
+        else:
+            retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
+        
     return retorno
 ##########################################################
 def infoTx(user_id,tx):
@@ -140,9 +145,11 @@ def infoTx(user_id,tx):
     #1 entrada varias salidas:       tx=973eaa563475eaa3291612811c0348b260823a4b790f03eaa1a5ae52fa717804
     #varias entradas varias salidas: tx=7274c3d4a3dd41806fa2f56bcccee5495b61d24f796fed3024502d6f231f7c73
     #Multisig salida:                tx=d63667e49701df10b51dfe347e6ed6f59a73f4ef3c883ad9cfee3d23064372a6
+    #OP_RETURN:                      tx=ea510170d41e31872f919d9af0123d843481c0d5f2560609d565d515419acc59
+    #Sería conveniente pasarle transacciones aleatorias a ver si vemos más casos de fallo con operadores OP_...
     redActual = booleanFromUser(user_id)
 
-    if redActual == "Error": #NO FUNCIONA BIEN TODAVIA CON LAS MULTISIG, MIRAR...
+    if redActual == "Error":
         return redActual
 
     if redActual: 
@@ -151,6 +158,8 @@ def infoTx(user_id,tx):
         client = AuthServiceProxy(getMainnetClient())
     
     jsonTx = client.getrawtransaction(tx, True)
+
+    #print(jsonTx)
 
     # Obtener los inputs
     dirsEntrada = []
@@ -161,9 +170,19 @@ def infoTx(user_id,tx):
         vout = prev_tx["vout"][vin["vout"]]
         dirsEntrada.append(vout["scriptPubKey"]["address"])
 
-    if not check_multisig(jsonTx): #En caso de que sea una transacción sin salida multisig procesamos aqui
-        dirsSalidaSaldo = [(vout['scriptPubKey']['address'], float(vout['value'])) for vout in jsonTx['vout']]
-        suma_total = sum(valor for _, valor in dirsSalidaSaldo)
+    if not check_multisig(jsonTx):  # En caso de que sea una transacción sin salida multisig procesamos aquí
+        dirsSalidaSaldo = []
+        for vout in jsonTx['vout']:
+            ###Si tenemos un OP_RETURN los campos cambian, tratamos de forma diferente.
+            if 'OP_RETURN' in vout['scriptPubKey']['asm']:
+                # Si es OP_RETURN, extraemos los datos
+                data = vout['scriptPubKey']['asm'].split(' ', 1)[1] if len(vout['scriptPubKey']['asm'].split(' ', 1)) > 1 else "No data"
+                dirsSalidaSaldo.append(("OP_RETURN", data))
+            else:
+                # Si no es OP_RETURN, procesamos como antes
+                dirsSalidaSaldo.append((vout['scriptPubKey'].get('address', 'Desconocida'), float(vout['value'])))
+    
+        suma_total = sum(valor for _, valor in dirsSalidaSaldo if isinstance(valor, float))
         return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}y la/s salida/s son:\n{outputFormat(dirsSalidaSaldo)}"
 
     else:#Tratar el procesamiento de la multisig
