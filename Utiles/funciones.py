@@ -2,7 +2,6 @@ import bitcoinrpc
 import requests
 import re
 from bitcoinrpc.authproxy import AuthServiceProxy
-from pymongo import MongoClient
 from datetime import datetime
 #Imports propios
 from conexionMongo import booleanFromUser
@@ -159,14 +158,12 @@ def infoTx(user_id,tx):
     
     jsonTx = client.getrawtransaction(tx, True)
 
-    #print(jsonTx)
-
     # Obtener los inputs
     dirsEntrada = []
     for vin in jsonTx["vin"]:
         prev_tx = client.getrawtransaction(vin["txid"], True)
         if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
-            return "No hay soporte para las transacciones que toman una multisig de entrada."       #
+            return "No hay soporte para las transacciones que toman una multisig de entrada."
         vout = prev_tx["vout"][vin["vout"]]
         dirsEntrada.append(vout["scriptPubKey"]["address"])
 
@@ -188,7 +185,6 @@ def infoTx(user_id,tx):
     else:#Tratar el procesamiento de la multisig
         dirsConvencionales = []
         dirsMultisig = []
-        salidas = []
         suma_total = 0
         #Direcciones normales
         for output in jsonTx.get('vout', []):
