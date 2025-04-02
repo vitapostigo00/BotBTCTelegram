@@ -9,6 +9,8 @@ class TestMiModulo(unittest.TestCase):
     def test_conexion_fulcrum(self):
         self.assertIsInstance(numBloquesRed(0), int)
         self.assertIsInstance(numBloquesRed(1), int)
+        self.assertIsInstance(numBloquesRed(0), int)
+        self.assertIsInstance(numBloquesRed(1), int)
         
 
 if __name__ == '__main__':
