@@ -1,12 +1,10 @@
 import random
 import unittest
-from funciones import infoBlockchain, numBloquesRed
+from funciones import blockInfo, infoBlockchain, numBloquesRed
 from conexionMongo import *
 from consultasFulcrum import *
-
 import json
 import requests
-import random
 from concurrent.futures import ThreadPoolExecutor
 
 # URL para obtener la altura más reciente del bloque
@@ -66,7 +64,7 @@ def obtener_transacciones(hash_bloque):
         print(f"Error al obtener las transacciones del bloque {hash_bloque}: {response.status_code}")
         return None
     
-def devolverBloques(cantidad_bloques):
+def devolverDirecciones(cantidad_bloques):
     altura_maxima = obtener_altura_maxima()
     if not altura_maxima:
         return
@@ -89,6 +87,22 @@ def devolverBloques(cantidad_bloques):
 
     return all_addresses
 
+
+def devolverBloques(cantidad_bloques):
+    altura_maxima = obtener_altura_maxima()
+    if not altura_maxima:
+        return
+    
+    bloques_aleatorios = obtener_bloques_aleatorios(altura_maxima, cantidad_bloques)
+
+    hashes_bloques = []
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        hashes_bloques = list(executor.map(obtener_hash_bloque, bloques_aleatorios))
+        hashes_bloques = [hash_bloque for hash_bloque in hashes_bloques if hash_bloque]
+
+    return hashes_bloques
+
 class TestMiModulo(unittest.TestCase):
     ##Realmente hay que probar conexión nodo (funciones) y conexión fulcrum
     def test_conexion_fulcrum(self):
@@ -97,11 +111,33 @@ class TestMiModulo(unittest.TestCase):
         bloquesTestnet = numBloquesRed(1)
         self.assertIsInstance(bloquesTestnet, int)
         sumaCuentas = 0
+
+        try: 
+            bloques = devolverBloques(4000)
+            altura_maxima = obtener_altura_maxima()
+            for i in range(4000):
+                bloques.append(random.randint(0, altura_maxima))
+
+            for bloque in bloques: 
+                blockInfo(str(0), str(bloque))
+
+        except:
+            print("Error en bloques")
+            assert False
+
+        print("bloques okay, pasando a saldos...")
+        
+        try:
         #Ahora vamos a obtener muchas direcciones y consultar el saldo en el nodo para sumar todos los saldos (solo para ver que getBalance funciona bien)
         #Vamos a intentar sacar los últimos 5 bloques y consultar el saldo de todas ellas a ver si alguna lanza un fallo, puede tardar...
-        for direccion in devolverBloques(5):
-            sumaCuentas += getBalanceNode(str(0),direccion)
+            direcciones = devolverDirecciones(5)
+            for direccion in direcciones:
+                sumaCuentas += getBalanceNode(str(0),direccion)
 
+        except:
+            print("Fallo en la suma de las cuentas...")
+            assert False
+            
         print(sumaCuentas)
 
 
