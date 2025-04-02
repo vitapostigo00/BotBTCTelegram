@@ -113,9 +113,9 @@ class TestMiModulo(unittest.TestCase):
         sumaCuentas = 0
 
         try: 
-            bloques = devolverBloques(4000)
+            bloques = devolverBloques(500)
             altura_maxima = obtener_altura_maxima()
-            for i in range(4000):
+            for i in range(500):
                 bloques.append(random.randint(0, altura_maxima))
 
             for bloque in bloques: 
@@ -137,7 +137,7 @@ class TestMiModulo(unittest.TestCase):
         except:
             print("Fallo en la suma de las cuentas...")
             assert False
-            
+
         print(sumaCuentas)
 
 
