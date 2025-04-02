@@ -113,7 +113,9 @@ class TestMiModulo(unittest.TestCase):
         sumaCuentas = 0
 
         try: 
-            bloques = devolverBloques(500)
+            #bloques = devolverBloques(500)
+            #como da problema con el limite de requests trabajamos por ahora solo con local....
+            bloques = []
             altura_maxima = obtener_altura_maxima()
             for i in range(500):
                 bloques.append(random.randint(0, altura_maxima))
