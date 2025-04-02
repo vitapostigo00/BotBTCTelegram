@@ -10,16 +10,6 @@ from credentials import *
 import hashlib
 import binascii
 
-def hashBlockHeader(header_hex):
-    # Decodificar el encabezado hexadecimal a bytes
-    header_bin = binascii.unhexlify(header_hex)
-    # Aplicar SHA-256 dos veces
-    hash1 = hashlib.sha256(header_bin).digest()
-    hash2 = hashlib.sha256(hash1).digest()
-    # Invertir el orden de los bytes para obtener el hash del bloque
-    hash_bloque = binascii.hexlify(hash2[::-1]).decode('utf-8')
-    return hash_bloque
-
 ##########################################################
 def isValidBTCAddress(address):
     regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
