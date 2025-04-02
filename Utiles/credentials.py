@@ -1,37 +1,37 @@
 import hashlib
 import bitcoinlib
 from bitcoinlib.transactions import Output
-from ApiToken import btcMainnetPass,btcTestnetPass,ipLocal
+from ApiToken import *
 
 #Para mongodb:
 #Mirar para cambiar las ips por redes internas.
 credsMongo = {
-    "client": "mongodb://" + ipLocal () + ":27017/",
+    "client": f"mongodb://{mongo_db()}:27017/",
     "db": "telegram_bot",
     "collection": "cuentasTelegram"
 }
 
-#MAINNET: 
+#MAINNET:
 credsNodoMainnet = {
     "rpc_user" : "mainnet",
     "rpc_password" : btcMainnetPass(),
-    "rpc_url" : "http://"+ipLocal()+":8332/"    
+    "rpc_url" : f"http://{bitcoin_mainnet()}:8332/"
 }
 
 credsFulcrumMainnet = {
-    "host" : ipLocal(),
+    "host" : fulcrum_mainnet(),
     "port" : 50001
 }
 
-#TESTNET: 
+#TESTNET:
 credsNodoTestnet = {
     "rpc_user" : "testnet",
     "rpc_password" : btcTestnetPass(),
-    "rpc_url" : "http://"+ipLocal()+":18332/"
+    "rpc_url" : f"http://{bitcoin_testnet ()}:18332/"
 }
 
 credsFulcrumTestnet = {
-    "host" : ipLocal (),
+    "host" : fulcrum_testnet(),
     "port" : 50002
 }
 
@@ -44,7 +44,7 @@ def get_credentials(controlData):
             return credsMongo
         else :
             return {}
-        
+
     else:
         if controlData:
             return {
@@ -116,13 +116,13 @@ def getFulcrumQuery(method,data,testnet):
             }
         else:
             return {}
-        
+
     except bitcoinlib.encoding.EncodingError as e:
         return {}
 
 #PARTE DE PRUEBAS PARA NO TENER QUE CONSULTAR EL NODO RPC A MANO:
-def getMainnetClient(): 
-    return "http://mainnet:"+btcMainnetPass()+"@"+ipLocal()+":8332"
+def getMainnetClient():
+    return f"http://mainnet:{btcMainnetPass()}@{bitcoin_mainnet()}:8332"
 
-def getTestnetClient(): 
-    return "http://testnet:"+btcTestnetPass()+"@"+ipLocal()+":18332"
+def getTestnetClient():
+    return f"http://testnet:{btcTestnetPass()}@{bitcoin_testnet()}:18332"

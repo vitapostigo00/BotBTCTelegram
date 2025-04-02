@@ -1,14 +1,11 @@
 import asyncio
-import signal
 from pymongo import MongoClient
-import zmq
-import threading
-from ApiToken import returnApiToken
-from consultasFulcrum import getBalanceNode
 from telegram import Bot
+import threading
+import zmq
+from ApiToken import bitcoin_mainnet, bitcoin_testnet, returnApiToken
+from consultasFulcrum import getBalanceNode
 from credentials import get_credentials
-from ApiToken import ipLocal
-
 
 async def pushMessage(mensaje, listaUsuarios,bot):
     for usuario in listaUsuarios:
@@ -41,7 +38,7 @@ async def on_new_block(bot):
         except:
             #Para depurar por consola si tiene algún fallo, es importante que el cliente cierre...
             print(f"Error arrojado por la cuenta: {cuenta['address']}")
-        
+
     client.close()
 
 async def on_new_block_testnet(bot):
@@ -70,13 +67,13 @@ async def on_new_block_testnet(bot):
         except:
             #Para depurar por consola si tiene algún fallo, es importante que el cliente cierre...
             print(f"Error arrojado por la cuenta: {cuenta['address']}")
-        
+
     client.close()
 
 async def listen_to_zmq():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect("tcp://"+ ipLocal() +":8433")
+    socket.connect(f"tcp://{bitcoin_mainnet()}:8433")
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
     bot = Bot(token=returnApiToken())
 
@@ -90,7 +87,7 @@ async def listen_to_zmq():
 async def listen_to_zmq_testnet():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.connect("tcp://"+ ipLocal() +":18433")
+    socket.connect(f"tcp://{bitcoin_testnet()}:18433")
     socket.setsockopt_string(zmq.SUBSCRIBE, "")
     bot = Bot(token=returnApiToken())
 
@@ -100,7 +97,7 @@ async def listen_to_zmq_testnet():
         block_data = socket.recv()
         print("Bloque de testnet.")
         await on_new_block_testnet(bot)
-        
+
 def ejecutar_en_thread_1():
     asyncio.run(listen_to_zmq())
 
