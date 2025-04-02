@@ -7,9 +7,6 @@ from datetime import datetime
 from conexionMongo import booleanFromUser
 from credentials import *
 
-import hashlib
-import binascii
-
 ##########################################################
 def isValidBTCAddress(address):
     regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
