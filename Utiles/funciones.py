@@ -130,6 +130,7 @@ def infoTx(user_id,tx):
     #1 entrada 1 salida:             tx=c9435711f75903656f0b04d84b4058f2755403aa279774de212f75797c04474f
     #1 entrada varias salidas:       tx=973eaa563475eaa3291612811c0348b260823a4b790f03eaa1a5ae52fa717804
     #varias entradas varias salidas: tx=7274c3d4a3dd41806fa2f56bcccee5495b61d24f796fed3024502d6f231f7c73
+    #Multisig entrada:               tx=eeab3ef6cbea5f812b1bb8b8270a163b781eb7cde10ae5a7d8a3f452a57dca93
     #Multisig salida:                tx=d63667e49701df10b51dfe347e6ed6f59a73f4ef3c883ad9cfee3d23064372a6
     #OP_RETURN:                      tx=ea510170d41e31872f919d9af0123d843481c0d5f2560609d565d515419acc59
     #Sería conveniente pasarle transacciones aleatorias a ver si vemos más casos de fallo con operadores OP_...
@@ -225,7 +226,7 @@ def blockInfo(user_id, data):
     try:
         blockstats = client.getblockstats(blockHash)
     except bitcoinrpc.authproxy.JSONRPCException:
-        return "No se ha podido encontrar el bloque, revisa que los datos sean correctos..."
+        return "Error, no se ha podido encontrar el bloque, revisa que los datos sean correctos..."
 
     try: 
         satsInBTC = 100000000

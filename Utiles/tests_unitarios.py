@@ -5,7 +5,7 @@ from conexionMongo import *
 from consultasFulcrum import *
 import json
 import requests
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # URL para obtener la altura más reciente del bloque
 url_tip_height = "https://blockstream.info/api/blocks/tip/height"
@@ -112,6 +112,8 @@ class TestMiModulo(unittest.TestCase):
         self.assertIsInstance(bloquesTestnet, int)
         sumaCuentas = 0
 
+
+        #############TRANSACCIONES?????
         try: 
             #bloques = devolverBloques(500)
             #como da problema con el limite de requests trabajamos por ahora solo con local....
@@ -121,7 +123,15 @@ class TestMiModulo(unittest.TestCase):
                 bloques.append(random.randint(0, altura_maxima))
 
             for bloque in bloques: 
-                blockInfo(str(0), str(bloque))
+                with ThreadPoolExecutor(max_workers=4) as executor:
+                    futures = executor.submit(blockInfo(str(0), str(bloque)))
+
+                    for future in as_completed(futures):
+                        resultado = future.result()
+                        if str(resultado).lower().startswith("false"):
+                            assert False
+                            print()
+                    
 
         except:
             print("Error en bloques")
