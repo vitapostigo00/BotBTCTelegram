@@ -149,7 +149,7 @@ def infoTx(user_id,tx):
             jsonTx = client.getrawtransaction(tx, True)
         except Exception as data:
             print (data)
-        return "Error obteniendo la transacción, revise los datos."
+            return "Error obteniendo la transacción, revise los datos."
     else:
         return "El hash de la transacción proporcionada no es válido."
 
