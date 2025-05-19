@@ -153,12 +153,12 @@ def infoTx(user_id,tx):
     try:
         if "coinbase" in jsonTx["vin"][0]:
             id = jsonTx["txid"]
-            recompensa = sum(float(vout["value"]) for vout in jsonTx["vout"] if isinstance(vout["value"], (int, float)))
+            recompensa = float(jsonTx["vout"][0]["value"])
             direccion_minero = jsonTx["vout"][0]["scriptPubKey"].get("address", "Desconocida")
             bloque_id = jsonTx.get("blockhash", "Desconocido")
             return (
                 f"La transacción con id: {id} es una transacción de tipo coinbase.\n"
-                f"Corresponde a la minería de un bloque con una recompensa de {recompensa:.8f} BTC que en este momento tiene un valor de: {precioPorBTC(recompensa)}$\n"
+                f"Corresponde a la minería de un bloque con una recompensa de {recompensa:.8f} BTC que en este momento tiene un valor de: {precioPorBTC(recompensa)}\n"
                 f"El beneficiario (minero) es: {direccion_minero}\n"
                 f"ID del bloque minado: {bloque_id}"
             )
