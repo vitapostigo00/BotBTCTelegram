@@ -142,8 +142,6 @@ def infoTx(user_id,tx):
     
     validHash = bool(re.fullmatch(r'[0-9a-f]{64}', tx))
 
-
-
     if validHash:
         try:
             jsonTx = client.getrawtransaction(tx, True)
@@ -153,7 +151,17 @@ def infoTx(user_id,tx):
         return "El hash de la transacción proporcionada no es válido."
 
     try:
-        print(jsonTx)
+        if "coinbase" in jsonTx["vin"][0]:
+            id = jsonTx["txid"]
+            recompensa = sum(float(vout["value"]) for vout in jsonTx["vout"] if isinstance(vout["value"], (int, float)))
+            direccion_minero = jsonTx["vout"][0]["scriptPubKey"].get("address", "Desconocida")
+            bloque_id = jsonTx.get("blockhash", "Desconocido")
+            return (
+                f"La transacción con id: {id} es una transacción de tipo coinbase.\n"
+                f"Corresponde a la minería de un bloque con una recompensa de {recompensa:.8f} BTC que en este momento tiene un valor de: {precioPorBTC(recompensa)}$\n"
+                f"El beneficiario (minero) es: {direccion_minero}\n"
+                f"ID del bloque minado: {bloque_id}"
+            )
         # Obtener los inputs
         dirsEntrada = []
         for vin in jsonTx["vin"]:
