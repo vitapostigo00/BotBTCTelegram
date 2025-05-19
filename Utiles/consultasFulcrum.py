@@ -37,12 +37,12 @@ def consultaFulcrumPesada(host, port, content):
     return res
 
 def checkValidAddr(user_id,address):
-    #Hacemos una consulta y si el sistema devuelve fallo ya sabemos que hay un error...
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
         return False
 
+    #Probamos getBalance como función para probar que no haya fallo.
     jsonQuery = getFulcrumQuery('getBalance',address,redActual)
     servidor = get_credentials(redActual)
 
