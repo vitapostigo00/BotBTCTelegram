@@ -158,8 +158,8 @@ def infoTx(user_id,tx):
         dirsEntrada = []
         for vin in jsonTx["vin"]:
             prev_tx = client.getrawtransaction(vin["txid"], True)
-            if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
-                return "No hay soporte para las transacciones que toman una multisig de entrada."
+            #if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
+                #return "No hay soporte para las transacciones que toman una multisig de entrada."
             vout = prev_tx["vout"][vin["vout"]]
             dirsEntrada.append(vout["scriptPubKey"]["address"])
 
