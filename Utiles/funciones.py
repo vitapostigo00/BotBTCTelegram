@@ -142,51 +142,61 @@ def infoTx(user_id,tx):
     
     jsonTx = client.getrawtransaction(tx, True)
 
-    # Obtener los inputs
-    dirsEntrada = []
-    for vin in jsonTx["vin"]:
-        prev_tx = client.getrawtransaction(vin["txid"], True)
-        if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
-            return "No hay soporte para las transacciones que toman una multisig de entrada."
-        vout = prev_tx["vout"][vin["vout"]]
-        dirsEntrada.append(vout["scriptPubKey"]["address"])
+    try:
 
-    if not check_multisig(jsonTx):  # En caso de que sea una transacción sin salida multisig procesamos aquí
-        dirsSalidaSaldo = []
-        for vout in jsonTx['vout']:
-            ###Si tenemos un OP_RETURN los campos cambian, tratamos de forma diferente.
-            if 'OP_RETURN' in vout['scriptPubKey']['asm']:
-                # Si es OP_RETURN, extraemos los datos
-                data = vout['scriptPubKey']['asm'].split(' ', 1)[1] if len(vout['scriptPubKey']['asm'].split(' ', 1)) > 1 else "No data"
-                dirsSalidaSaldo.append(("OP_RETURN", data))
-            else:
-                # Si no es OP_RETURN, procesamos como antes
-                dirsSalidaSaldo.append((vout['scriptPubKey'].get('address', 'Desconocida'), float(vout['value'])))
+        # Obtener los inputs
+        dirsEntrada = []
+        for vin in jsonTx["vin"]:
+            prev_tx = client.getrawtransaction(vin["txid"], True)
+            if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
+                return "No hay soporte para las transacciones que toman una multisig de entrada."
+            vout = prev_tx["vout"][vin["vout"]]
+            dirsEntrada.append(vout["scriptPubKey"]["address"])
+
+        if not check_multisig(jsonTx):  # En caso de que sea una transacción sin salida multisig procesamos aquí
+            dirsSalidaSaldo = []
+            for vout in jsonTx['vout']:
+                ###Si tenemos un OP_RETURN los campos cambian, tratamos de forma diferente.
+                if 'OP_RETURN' in vout['scriptPubKey']['asm']:
+                    # Si es OP_RETURN, extraemos los datos
+                    data = vout['scriptPubKey']['asm'].split(' ', 1)[1] if len(vout['scriptPubKey']['asm'].split(' ', 1)) > 1 else "No data"
+                    dirsSalidaSaldo.append(("OP_RETURN", data))
+                else:
+                    # Si no es OP_RETURN, procesamos como antes
+                    dirsSalidaSaldo.append((vout['scriptPubKey'].get('address', 'Desconocida'), float(vout['value'])))
     
-        suma_total = sum(valor for _, valor in dirsSalidaSaldo if isinstance(valor, float))
-        return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}y la/s salida/s son:\n{outputFormat(dirsSalidaSaldo)}"
+            suma_total = sum(valor for _, valor in dirsSalidaSaldo if isinstance(valor, float))
+            return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}y la/s salida/s son:\n{outputFormat(dirsSalidaSaldo)}"
 
-    else:#Tratar el procesamiento de la multisig
-        dirsConvencionales = []
-        dirsMultisig = []
-        suma_total = 0
-        #Direcciones normales
-        for output in jsonTx.get('vout', []):
-            address = output.get('scriptPubKey', {}).get('address')
-            if address:
-                dirsConvencionales.append(address)
-                dirsConvencionales.append(output.get('value'))        #<addr1> <value1> <addr2> <value2> ... <addrn> <valuen>
-                suma_total += output.get('value')
+        else:#Tratar el procesamiento de la multisig
+            dirsConvencionales = []
+            dirsMultisig = []
+            suma_total = 0
+            #Direcciones normales
+            for output in jsonTx.get('vout', []):
+                address = output.get('scriptPubKey', {}).get('address')
+                if address:
+                    dirsConvencionales.append(address)
+                    dirsConvencionales.append(output.get('value'))        #<addr1> <value1> <addr2> <value2> ... <addrn> <valuen>
+                    suma_total += output.get('value')
 
-        #Multisig
-        for output in jsonTx['vout']:
-            script_asm = output['scriptPubKey']['asm']
-            if 'OP_CHECKMULTISIG' in script_asm:
-                dirsMultisig.append(script_asm)
-                dirsMultisig.append(output.get('value'))
-                suma_total += output.get('value')
+            #Multisig
+            for output in jsonTx['vout']:
+                script_asm = output['scriptPubKey']['asm']
+                if 'OP_CHECKMULTISIG' in script_asm:
+                    dirsMultisig.append(script_asm)
+                    dirsMultisig.append(output.get('value'))
+                    suma_total += output.get('value')
 
-        return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
+            return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
+    except KeyError as ke:
+        if redActual: #Testnet
+            return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://live.blockcypher.com/btc-testnet/tx/{tx}/"
+        else:
+            return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://www.blockchain.com/explorer/transactions/btc/{tx}/"
+    
+    except Exception as excp:
+        return "No se debería dar este caso, solo para debug..."
 ##########################################################
 def blockInfo(user_id, data):
     from consultasFulcrum import getBlockFromTx
