@@ -1,7 +1,6 @@
 import bitcoinrpc
 import requests
-import re
-from bitcoinrpc.authproxy import AuthServiceProxy
+from bitcoinrpc.authproxy import AuthServiceProxy,JSONRPCException
 from datetime import datetime
 #Imports propios
 from conexionMongo import booleanFromUser
@@ -140,14 +139,17 @@ def infoTx(user_id,tx):
     else:
         client = AuthServiceProxy(getMainnetClient())
     
+
     try:
         jsonTx = client.getrawtransaction(tx, True)
-    except Exception as data:
-        print (data)
-        return "Texto de prueba"
+    except JSONRPCException as e:
+        print("JSONRPCException:", e)
+        return "Texto de prueb original"
+    except Exception as e:
+        print("Excepción inesperada:", e)
+        return "Texto de prueba generico"
 
     try:
-
         # Obtener los inputs
         dirsEntrada = []
         for vin in jsonTx["vin"]:
