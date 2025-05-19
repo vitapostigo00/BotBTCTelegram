@@ -8,10 +8,6 @@ from conexionMongo import booleanFromUser
 from credentials import *
 
 ##########################################################
-def isValidBTCAddress(address):
-    regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
-    return bool(re.match(regex, address))
-##########################################################
 def precio_bitcoin():
     url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd"
     response = requests.get(url)

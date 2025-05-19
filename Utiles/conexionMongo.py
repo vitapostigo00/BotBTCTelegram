@@ -4,10 +4,6 @@ from credentials import get_credentials
 #Para funciones que son principalmente actualizaciones y consultas de la base de datos.
 
 ##########################################################
-def isValidBTCAddress(address):
-    regex = r"^(bc1|[13])[a-zA-HJ-NP-Z0-9]{24,59}$"
-    return bool(re.match(regex, address))
-##########################################################
 def createNewAddressEntry(user_id,address):
     from credentials import addr2scripthash
     from consultasFulcrum import getBalanceNode
@@ -123,7 +119,8 @@ def subscribeUserToAddress(user_id,address):
         return "Se le notificarán los cambios en la dirección: " + str(address)
     
     else:
-        if isValidBTCAddress(address):
+        from consultasFulcrum import checkValidAddr
+        if checkValidAddr(user_id,address):
             try:
                 entryToInsert = createNewAddressEntry(user_id,address)
                 collection.insert_one(entryToInsert)

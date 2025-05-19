@@ -35,6 +35,24 @@ def consultaFulcrumPesada(host, port, content):
         res += data.decode()
     sock.close()
     return res
+
+def checkValidAddr(user_id,address):
+    #Hacemos una consulta y si el sistema devuelve fallo ya sabemos que hay un error...
+    redActual = booleanFromUser(user_id)
+
+    if redActual == "Error":
+        return False
+
+    jsonQuery = getFulcrumQuery('getBalance',address,redActual)
+    servidor = get_credentials(redActual)
+
+    try:
+        data = json.loads(consultaFulcrum(servidor["fulcrum"]["host"],servidor["fulcrum"]["port"], jsonQuery))
+        return True
+    
+    except bitcoinlib.encoding.EncodingError as e:
+        return False
+
     
 def getBalanceNode(user_id,address):
     satsInBTC = 100000000
