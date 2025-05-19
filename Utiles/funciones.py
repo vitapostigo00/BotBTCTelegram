@@ -1,3 +1,4 @@
+import re
 import bitcoinrpc
 import requests
 from bitcoinrpc.authproxy import AuthServiceProxy,JSONRPCException
@@ -139,15 +140,12 @@ def infoTx(user_id,tx):
     else:
         client = AuthServiceProxy(getMainnetClient())
     
+    validHash = bool(re.fullmatch(r'[0-9a-f]{64}', tx))
 
-    try:
+    if validHash:
         jsonTx = client.getrawtransaction(tx, True)
-    except JSONRPCException as e:
-        print("JSONRPCException:", e)
-        return "Texto de prueb original"
-    except Exception as e:
-        print("Excepción inesperada:", e)
-        return "Texto de prueba generico"
+    else:
+        return "El hash de la transacción proporcionada no es válido."
 
     try:
         # Obtener los inputs
