@@ -129,7 +129,7 @@ def infoTx(user_id,tx):
     #Multisig entrada:               tx=eeab3ef6cbea5f812b1bb8b8270a163b781eb7cde10ae5a7d8a3f452a57dca93
     #Multisig salida:                tx=d63667e49701df10b51dfe347e6ed6f59a73f4ef3c883ad9cfee3d23064372a6
     #OP_RETURN:                      tx=ea510170d41e31872f919d9af0123d843481c0d5f2560609d565d515419acc59
-    #Sería conveniente pasarle transacciones aleatorias a ver si vemos más casos de fallo con operadores OP_...
+    #COINBASE:                       tx=89e0d6f560f0de732f3ad46d928582802b77e693900e708b882ef913c7172172
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
@@ -148,18 +148,16 @@ def infoTx(user_id,tx):
         try:
             jsonTx = client.getrawtransaction(tx, True)
         except Exception as data:
-            print (data)
             return "Error obteniendo la transacción, revise los datos."
     else:
         return "El hash de la transacción proporcionada no es válido."
 
     try:
+        print(jsonTx)
         # Obtener los inputs
         dirsEntrada = []
         for vin in jsonTx["vin"]:
             prev_tx = client.getrawtransaction(vin["txid"], True)
-            #if check_multisig(prev_tx):                                                                 #HAY QUE VER SI ESTO HACE FALTA
-                #return "No hay soporte para las transacciones que toman una multisig de entrada."
             vout = prev_tx["vout"][vin["vout"]]
             dirsEntrada.append(vout["scriptPubKey"]["address"])
 
@@ -204,9 +202,8 @@ def infoTx(user_id,tx):
             return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://blockstream.info/testnet/tx/{tx}/"
         else:
             return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://www.blockchain.com/explorer/transactions/btc/{tx}/"
-    
     except Exception as excp:
-        return "No se debería dar este caso, solo para debug..."
+        return "Caso solo para debug, no debería darse."
 ##########################################################
 def blockInfo(user_id, data):
     from consultasFulcrum import getBlockFromTx

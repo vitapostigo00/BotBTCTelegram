@@ -198,7 +198,11 @@ def parsearTransacciones(historico):
 
 
 def infoCuenta(user_id,address):
-    saldoActual = getBalanceNode(user_id,address)
+    try:
+        saldoActual = getBalanceNode(user_id,address)
+    except Exception:
+        return "Dirección no válida, asegurese de que el formato es correcto"
+
     if saldoActual=="La dirección no tiene un formato correcto.":
         return saldoActual
     
