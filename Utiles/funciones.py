@@ -142,7 +142,7 @@ def infoTx(user_id,tx):
     
     try:
         jsonTx = client.getrawtransaction(tx, True)
-    except bitcoinrpc.authproxy.JSONRPCException as data:
+    except Exception as data:
         print (data)
         return "Texto de prueba"
 
