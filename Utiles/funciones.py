@@ -142,8 +142,14 @@ def infoTx(user_id,tx):
     
     validHash = bool(re.fullmatch(r'[0-9a-f]{64}', tx))
 
+
+
     if validHash:
-        jsonTx = client.getrawtransaction(tx, True)
+        try:
+            jsonTx = client.getrawtransaction(tx, True)
+        except Exception as data:
+            print (data)
+        return "Error obteniendo la transacción, revise los datos."
     else:
         return "El hash de la transacción proporcionada no es válido."
 
