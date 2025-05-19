@@ -140,7 +140,11 @@ def infoTx(user_id,tx):
     else:
         client = AuthServiceProxy(getMainnetClient())
     
-    jsonTx = client.getrawtransaction(tx, True)
+    try:
+        jsonTx = client.getrawtransaction(tx, True)
+    except bitcoinrpc.authproxy.JSONRPCException as data:
+        print (data)
+        return "Texto de prueba"
 
     try:
 
@@ -191,7 +195,7 @@ def infoTx(user_id,tx):
             return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
     except KeyError as ke:
         if redActual: #Testnet
-            return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://live.blockcypher.com/btc-testnet/tx/{tx}/"
+            return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://blockstream.info/testnet/tx/{tx}/"
         else:
             return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://www.blockchain.com/explorer/transactions/btc/{tx}/"
     
