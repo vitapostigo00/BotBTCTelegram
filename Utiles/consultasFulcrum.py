@@ -110,8 +110,8 @@ def firstUse(user_id,addr):
     
 
 
-def addressHistory(user_id,tx):
-    #Mirar cómo queremos los campos en el bot de Telegram
+def addressHistory(user_id,tx):#En desuso porque no es de Teclado.
+    
     redActual = booleanFromUser(user_id)
 
     if redActual == "Error":
@@ -193,7 +193,9 @@ def parsearTransacciones(historico):
     else:
         txAProcesar = historico["result"]
     for tx in txAProcesar:
-        retorno += f"Transacción con hash: {tx['tx_hash']} en el bloque: {tx['height']}\n"
+        #Mirar altura del bloque, por ahora se quita pero es interesante para conocer el tiempo de uso.
+        #retorno += f"Transacción con hash: {tx['tx_hash']} en el bloque: {tx['height']}\n"
+        retorno += f"Transacción con hash: {tx['tx_hash']}\n"
     return retorno
 
 
