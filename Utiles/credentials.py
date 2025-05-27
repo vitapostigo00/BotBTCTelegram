@@ -2,6 +2,7 @@ import hashlib
 import bitcoinlib
 from bitcoinlib.transactions import Output
 from ApiToken import *
+from StaticIps import * 
 
 #Para mongodb:
 #Mirar para cambiar las ips por redes internas.

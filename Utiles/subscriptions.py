@@ -3,7 +3,8 @@ from pymongo import MongoClient
 from telegram import Bot
 import threading
 import zmq
-from ApiToken import bitcoin_mainnet, bitcoin_testnet, returnApiToken
+from ApiToken import returnApiToken
+from StaticIps import *
 from consultasFulcrum import getBalanceNode
 from credentials import get_credentials
 
