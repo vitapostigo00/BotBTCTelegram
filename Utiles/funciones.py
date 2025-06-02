@@ -218,6 +218,7 @@ def infoTx(user_id,tx):
         else:
             return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://www.blockchain.com/explorer/transactions/btc/{tx}/"
     except Exception as excp:
+        print(jsonTx)
         return f"Caso solo para debug, no debería darse.\n{excp}"
 ##########################################################
 def blockInfo(user_id, data):
