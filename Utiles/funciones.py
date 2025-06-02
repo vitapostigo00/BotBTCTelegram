@@ -116,18 +116,24 @@ def outputFormat(list):
     for salida in list:
         #Caso OP_RETURN
         if salida[0] == 'OP_RETURN':
-            print("Salida OP RETURN: \n")
-            print(salida)
-            datosHex = salida[1].split()[1]
+            #print("Salida OP RETURN: \n")
+            #print(salida)
+
+            datosHex = salida[1].split()
+
+            if len(datosHex) == 0:
+                datosHex = salida[1]
+            else:
+                datosHex = datosHex[1]
+
             retorno += f"Dirección: OP_RETURN, datos escritos en hex: {datosHex}\n"
             try:
                 asciival = bytearray.fromhex(datosHex).decode()
                 retorno += f"Valor en ASCII: {asciival}\n"
             except UnicodeDecodeError:
                 retorno += "El cual no tiene representación ASCII\n"
-
-        else:
-            retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
+            else:
+                retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
         
     return retorno
 ##########################################################
