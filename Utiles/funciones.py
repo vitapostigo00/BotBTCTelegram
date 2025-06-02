@@ -116,6 +116,8 @@ def outputFormat(list):
     for salida in list:
         #Caso OP_RETURN
         if salida[0] == 'OP_RETURN':
+            print("Salida OP RETURN: \n")
+            print(salida)
             datosHex = salida[1].split()[1]
             retorno += f"Dirección: OP_RETURN, datos escritos en hex: {datosHex}\n"
             try:
