@@ -116,22 +116,19 @@ def outputFormat(list):
     for salida in list:
         #Caso OP_RETURN
         if salida[0] == 'OP_RETURN':
-            
             print(salida)
-
             if len(salida[0].split()) == 1:
                 datosHex = salida[1]
             else:
                 datosHex = salida[1].split()[1]
-
             retorno += f"Dirección: OP_RETURN, datos escritos en hex: {datosHex}\n"
             try:
                 asciival = bytearray.fromhex(datosHex).decode()
                 retorno += f"Valor en ASCII: {asciival}\n"
             except UnicodeDecodeError:
                 retorno += "El cual no tiene representación ASCII\n"
-            else:
-                retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
+        else:
+            retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
         
     return retorno
 ##########################################################
@@ -142,6 +139,7 @@ def infoTx(user_id,tx):
     #Multisig entrada:               tx=eeab3ef6cbea5f812b1bb8b8270a163b781eb7cde10ae5a7d8a3f452a57dca93
     #Multisig salida:                tx=d63667e49701df10b51dfe347e6ed6f59a73f4ef3c883ad9cfee3d23064372a6
     #OP_RETURN:                      tx=ea510170d41e31872f919d9af0123d843481c0d5f2560609d565d515419acc59
+    #OP_RETURN_ASCII:                tx=8bae12b5f4c088d940733dcd1455efc6a3a69cf9340e17a981286d3778615684
     #COINBASE:                       tx=89e0d6f560f0de732f3ad46d928582802b77e693900e708b882ef913c7172172
     redActual = booleanFromUser(user_id)
 
