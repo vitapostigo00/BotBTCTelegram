@@ -1,2 +1,0 @@
-https://sparrowwallet.com/docs/server-performance.html
-https://github.com/jgarzik/python-bitcoinrpc
