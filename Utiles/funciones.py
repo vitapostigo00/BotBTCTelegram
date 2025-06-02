@@ -116,7 +116,6 @@ def outputFormat(list):
     for salida in list:
         #Caso OP_RETURN
         if salida[0] == 'OP_RETURN':
-            print(salida)
             if len(salida[0].split()) == 1:
                 datosHex = salida[1]
             else:
@@ -128,6 +127,7 @@ def outputFormat(list):
             except UnicodeDecodeError:
                 retorno += "El cual no tiene representación ASCII\n"
         else:
+            #Caso dirección standard
             retorno += f"Dirección: {salida[0]} recibió: {salida[1]} BTC\n"
         
     return retorno
