@@ -127,7 +127,18 @@ def subscribeUserToAddress(user_id,address):
     
     else:
         from consultasFulcrum import checkValidAddr
-        if checkValidAddr(user_id,address):
+
+        try:
+            addrIsValid = checkValidAddr(user_id,address)
+        except Exception as e:
+            #Si lanza una excepción es porque la dirección no es de la red solicitada.
+            client.close()
+            if userInTestnet:
+                return "La dirección proporcionada es de Mainnet, cambia de red para agregarla."
+            else:
+                return "La dirección proporcionada es de Testnet, cambia de red para agregarla."
+        
+        if addrIsValid:
             try:
                 entryToInsert = createNewAddressEntry(user_id,address)
                 collection.insert_one(entryToInsert)
