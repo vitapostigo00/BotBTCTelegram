@@ -100,7 +100,7 @@ def subscribeUserToAddress(user_id,address):
 
     if direccion:
         #Si ya está previamente suscrito:
-        if user_id in direccion.get("subscribed", []):
+        if str(user_id) in direccion.get("subscribed", []):
             client.close()
             return "Ya está suscrito a esa dirección."
         
