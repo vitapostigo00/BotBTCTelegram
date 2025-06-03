@@ -52,6 +52,10 @@ def checkValidAddr(user_id,address):
     
     except bitcoinlib.encoding.EncodingError as e:
         return False
+    
+    #Los casos están separados por debug...
+    except Exception as e2:
+        return False
 
     
 def getBalanceNode(user_id,address):

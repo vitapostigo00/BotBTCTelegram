@@ -99,6 +99,13 @@ def subscribeUserToAddress(user_id,address):
         return "Error en el programa"
 
     if direccion:
+        #Si ya está previamente suscrito:
+        if user_id in direccion.get("subscribed", []):
+            client.close()
+            return "Ya está suscrito a esa dirección."
+        
+        #Si ya existe la dirección en la base de datos, comprobamos si el usuario ya está suscrito
+        collection.find_one({"address": str(address)})
         collection.update_one(
             {"address": str(address)},
             {"$push": {"subscribed": str(user_id)}}
@@ -143,7 +150,7 @@ def subscribeUserToAddress(user_id,address):
                 return "Error con la dirección solicitada"
         else:
             client.close()
-            return "La dirección proporcionada no es válida."
+            return "La dirección proporcionada no es válida para la red dada."
 ##########################################################
 def unsubscribeUserToAddress(user_id,address):
     credentials = get_credentials('mongo')

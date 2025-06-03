@@ -251,6 +251,8 @@ def blockInfo(user_id, data):
     try:
         numberData = int(data)
         if len(str(data)) != 64:
+            if numberData > numBloquesRed(user_id): 
+                return "El bloque solicitado supera la altura de la red."
             blockHash = client.getblockhash(numberData)
     except ValueError:
         if isBlockHash:
