@@ -1,7 +1,9 @@
 tests.py
 ApiToken.py
-variables.sh
 NEXTTODO.txt
 copiaTelegramBot
 copiaTeclado.txt
 exports.txt
+tests_unitarios.py
+Utiles/tests.py
+Utiles/variables.sh
