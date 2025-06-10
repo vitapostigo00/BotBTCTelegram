@@ -202,7 +202,7 @@ def unsubscribeUserToAddress(user_id,address):
         return "Ya no recibirá notifiaciones sobre la dirección: " + str(address)
     
     else:
-        return "No está siguiendo esa dirección actualmente, pruebe a revisarla o a cambiar de red."
+        return "No está siguiendo esa dirección actualmente."
     
 
 def showFollowing(user_id):

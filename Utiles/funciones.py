@@ -262,6 +262,8 @@ def blockInfo(user_id, data):
         blockstats = client.getblockstats(blockHash)
     except bitcoinrpc.authproxy.JSONRPCException:
         return "Error, no se ha podido encontrar el bloque, revisa que los datos sean correctos..."
+    except Exception as e:
+        return "Error de conexión con el servidor."
 
     try: 
         satsInBTC = 100000000
