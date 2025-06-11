@@ -15,16 +15,16 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 
 async def help(update: Update, context: CallbackContext) -> None:
-    options = ('Usa /keyboard para poder interactuar con el teclado.'
-    'De forma alternativa puedes usar los comandos antiguos aunque algunos pueden estar obsoletos...\n'
-    '/blockchaininfo Devuelve información de la red a la que está conectada el bot\n'
-    '/precio : Devuelve el precio actual de 1 BTC\n'
-    '/cambiarRed Para cambiar entre mainnet y testnet\n'
-    '/consultarTransaccion para obtener información sobre una transacción\n'
-    '/primerUso para consultar cuándo fue la primera vez que una dirección recibió fondos\n'
-    '/suscribirse para recibir notificaciones en tiempo real de cambios en el saldo de la cuenta que quiera\n'
-    '/cancelarSuscripcion para dejar de recibir las notificaciones de suscribirse\n'
-    '/mostrarSeguimiento para ver las direcciones que están siendo vigiladas \n'
+    options = (
+    'Usa /keyboard para poder interactuar con el teclado con todas las funciones disponibles.\n'
+    'De forma alternativa puedes usar los comandos que se muestran a continuación para hacer una serie más reducida de consultas:\n'
+    '/blockchaininfo Devuelve información de la red a la que está conectada el bot.\n'
+    '/precio Devuelve el precio actual de 1 BTC.\n'
+    '/cambiarRed Para cambiar entre mainnet y testnet.\n'
+    '/consultarTransaccion Para obtener información sobre una transacción.\n'
+    '/suscribirse Para recibir notificaciones en tiempo real de cambios en el saldo de las direcciones deseadas.\n'
+    '/cancelarSuscripcion Para dejar de recibir las notificaciones de suscribirse.\n'
+    '/mostrarSeguimiento Para ver las direcciones que están siendo vigiladas.\n'
     )
     await update.message.reply_text(options)
 

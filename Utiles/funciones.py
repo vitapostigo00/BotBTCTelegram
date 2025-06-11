@@ -169,7 +169,7 @@ def infoTx(user_id,tx):
             bloque_id = jsonTx.get("blockhash", "Desconocido")
             return (
                 f"La transacción con id: {id} es una transacción de tipo coinbase.\n"
-                f"Corresponde a la minería de un bloque con una recompensa de {recompensa:.8f} BTC que en este momento tiene un valor de: {precioPorBTC(recompensa)}\n"
+                f"Corresponde a la minería de un bloque con una recompensa de {recompensa:.8f} BTC que en este momento tienen un valor de: {precioPorBTC(recompensa)}\n"
                 f"El beneficiario (minero) es: {direccion_minero}\n"
                 f"ID del bloque minado: {bloque_id}"
             )
@@ -193,7 +193,7 @@ def infoTx(user_id,tx):
                     dirsSalidaSaldo.append((vout['scriptPubKey'].get('address', 'Desconocida'), float(vout['value'])))
     
             suma_total = sum(valor for _, valor in dirsSalidaSaldo if isinstance(valor, float))
-            return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}y la/s salida/s son:\n{outputFormat(dirsSalidaSaldo)}"
+            return f"En la transacción con id: {tx}\nha habido un movimiento de fondos por valor de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}y la/s salida/s son:\n{outputFormat(dirsSalidaSaldo)}"
 
         else:#Tratar el procesamiento de la multisig
             dirsConvencionales = []
@@ -215,7 +215,7 @@ def infoTx(user_id,tx):
                     dirsMultisig.append(output.get('value'))
                     suma_total += output.get('value')
 
-            return f"La transacción con id: {tx}\ntiene un valor total de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
+            return f"En la transacción con id: {tx}\nse han movido fondos por valor de: {suma_total} BTC, valorado en: {precioPorBTC(suma_total)} actualmente.\nHa sido enviada por las siguientes direccion/es:\n{printInputsFromList(dirsEntrada)}Y la/s salida/s se estructuran de la siguiente manera:\n" + textoMultisig(dirsConvencionales,dirsMultisig)
     except KeyError as ke:
         if redActual: #Testnet
             return f"Transacción con scripts complejos. Para poder obtener más información visita:\nhttps://blockstream.info/testnet/tx/{tx}/"
