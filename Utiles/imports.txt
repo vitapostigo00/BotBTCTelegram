@@ -1,6 +1,0 @@
-Para zmq: 
-APITOKEN *
-credentials *
-consultasFulcrum: consultaFulcrum y getBalanceNode -> from conexionMongo import booleanFromUser
-
-Para el resto todo.
