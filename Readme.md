@@ -1,5 +1,5 @@
 # Sistema de Alertas para Bitcoin en Telegram
-
+Todo el código se encuentra en el repositorio: https://github.com/Vitapostigo/BotBTCTelegram
 Existe un bot de Telegram disponible que usa este código.  
 Para usarlo, simplemente busca en Telegram:
 
