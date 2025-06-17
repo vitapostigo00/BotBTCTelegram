@@ -7,3 +7,6 @@ exports.txt
 tests_unitarios.py
 Utiles/tests.py
 Utiles/variables.sh
+.gitignore
+.DS_Store
+.gitattributes
